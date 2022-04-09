@@ -197,7 +197,7 @@ Look at that gorgeous Peewee query.. We will now populate on our front page by u
 Let's see how we're looking!
 - ```flask run```
 
-Beautiful. Well, we can Read, so let's get to the good part and make this a full CRUD app. Moving fast now, but Squid Inc didn't build the re-invent the internet without burning out a few thousand young coder souls.. Back in ```app.py``` let's update our food_detail route to receive parameters, GET, and POST requests. *NOTE*: Raw HTML forms cannot send HTTP verbs beyond GET and POST, so we're going to have to get a little creative with our routes to keep this short and sweet. This is not very RESTful, but I want to keep Javascript out of the mix for now. Update ```app.py``` with the following: 
+Beautiful. Well, we can Read, so let's get to the good part and make this a full CRUD app. Moving fast now, but Squid Inc didn't re-invent the internet without burning out a few thousand young coder souls.. Back in ```app.py``` let's update our food_detail route to receive parameters, GET, and POST requests. *NOTE*: Raw HTML forms cannot send HTTP verbs beyond GET and POST, so we're going to have to get a little creative with our routes to keep this short and sweet. This is not very RESTful, but I want to keep Javascript out of the mix for now. Update ```app.py``` with the following: 
 ```
 from flask import Flask, render_template, redirect, url_for, request
 from data.models import Food

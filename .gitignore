@@ -2,4 +2,5 @@ venv
 models
 sqlite
 squid_complete
+squid.db
 

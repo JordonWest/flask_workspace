@@ -17,7 +17,7 @@ def detail_page(id):
     food = Food.get(id=id)
     if request.method == 'GET':
         return render_template('food_detail.html', food=food), 200
-    if request.method == 'POST':
+    elif request.method == 'POST':
         food.name = request.form['name']
         food.rating = request.form['rating']
         food.save()

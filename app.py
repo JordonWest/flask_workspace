@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, request
-from models.models import Food
+from data.models import Food
 
 app = Flask(__name__)
 

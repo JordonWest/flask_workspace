@@ -292,6 +292,16 @@ On to Heroku. Using the UI, let's hook up our app. Simply go to "New" and select
 Select "Connect to Github", find your app once connected to Github, and select your deploy preferences. I really like the automatic deployment as it utilized web-hooks to re-deploy your app each time you make a commit - this is great for a development branch. 
 Simply hit the 'manual deploy' button for now, and watch your app come up!
 
+## Closing Notes:
+I will move the finished product committed to help you follow along, but feel free to move it to a different directory and start fresh. 
+Full disclosure, this is not ready for production. 
+- Auto-deploys are not a smart idea for a production site.
+- Did not get into styling for sake of not boiling your brain with copy-pasting tons of code
+- Our data handling is an absolute travesty.. 
+    -  Our models are being destroyed and re-built each time. 
+    -  No validations at any step of the process.
+    -  Our sqlite3 database 'should' persist any re-deploys due to it being in our .gitignore, but really should utilize heroku's free postgres database feature for permanence.
+
 ### References
 - https://flask.palletsprojects.com/en/1.1.x/quickstart/
 - https://docs.peewee-orm.com/en/latest/peewee/quickstart.html

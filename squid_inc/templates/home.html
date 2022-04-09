@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
   <h1> Homepage of Squid Inc </h1>
-  <button type="text"><a href="/food_detail">Go To Food Detail Page</a></button>
+  <h3>List of Foods</h3>
+  <ul>
+    {% for food in foods %}
+     <li>{{food.name}} = ({{food.rating}})   <a href="/food_detail/{{food.id}}">edit</a></li>
+    </br>
+    {% endfor %}
+  </ul>
+  <h3> Enter a New Food </h3>
+    <form action="/" method="POST">
+      <input type="text" name="name" placeholder="Name of food">
+      <input type="text" name="rating" placeholder="Enter a number rating">
+      <input type="submit" value="Submit">
+    </form>
 {% endblock %}

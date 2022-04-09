@@ -19,7 +19,8 @@ Create a main file for your new project.
 - ```touch app.py```
 
 Paste boilerplate into app.py.
-```from flask import Flask
+```
+from flask import Flask
 app = Flask(__name__)
 
 @app.route('/')
@@ -97,7 +98,7 @@ Lets then condense home.html, and add a button to get us to the next page. There
 {% extends "base.html" %}
 {% block content %}
   <h1> Homepage of Squid Inc </h1>
-  <button type="text"><a href="/food_detail">Go To Page 2</a></button>
+  <button type="text"><a href="/food_detail">Go To Food Detail</a></button>
 {% endblock %}
 ```
 We'll now create a quick mock-up for our detail page. It won't be doing much until we start passing some data in. 
@@ -141,7 +142,7 @@ class Food(Model):
     class Meta:
         database = db
 db.connect()
-db.recreate_tables([Food])
+db.create_tables([Food])
 ```
 Let's get back to app.py, import our models and see our database get created. 
 In app.py add: ```from data.models import Food```, then run: 
@@ -187,7 +188,7 @@ Look at that gorgeous Peewee query.. We will now populate on our front page by u
   <h3>List of Foods</h3>
   <ul>
     {% for food in foods %}
-    <li>{{food.name}} = ({{food.rating}})   <a href="/food_detail/{{food.id}}>edit</a></li>
+    <li>{{food.name}} = ({{food.rating}})   <a href="/food_detail/{{food.id}}">edit</a></li>
     </br>
     {% endfor %}
   </ul>
@@ -233,6 +234,8 @@ That's a bunch of new code.. Let's talk about it line by line. Our home_page met
 Our detail page has gotten multiple big changes. The endpoint now accepts an item id, allowing us to serve item-specific templates. Since raw HTML isn't very RESTful, to just build another Endpoint for deleting. Any other POST requests will be treated much like a PUT, writing to the instance of Food in any case. Any requests that are not GETs will be handled, then redirected back to the appropriate page. 
 Let's build out that functionality into our templates, and watch this app run the way it did before we patented the ocean. Update ```home.html``` with the following:
 ```
+{% extends "base.html" %}
+{% block content %}
   <h1> Homepage of Squid Inc </h1>
   <h3>List of Foods</h3>
   <ul>
@@ -266,6 +269,9 @@ And let's update our food_detail.
 {% endblock %}
 ```
 
+Let's see the final product!
+- ```flask run```
+
 At long last, we're ready to go public. Heroku is a great resource for deploying hobby apps for yourself due too it's ease of use and the number of options you have available without paying a dime. Once you've created an account on Heroku, instructions are provided for deploying your application. I want to do a little bit of pre-work real quick to save you a few google searches. 
 Heroku relies on a Procfile to give it instructions on how to run your application. To make this as easy for Heroku to understand, we've got gunicorn in our requirements.txt, and will use some of it's syntax to help speak to Heroku. Make a file called ```run.py``` and insert the following code. This is what ```flask run``` is doing under the hood, but we want to be deliberate for Heroku, as well as specify an environment variable. 
 ```
@@ -278,24 +284,13 @@ if __name__ == "__main__":
 ```
 
 Next, let's create our super complex ```Procfile```.
-- ```echo 'web: gunicorn run:app'```
+- ```echo 'web: gunicorn run:app' >> Procfile```
 
+Make sure you push all your work up. (Probably should have been doing this the whole time..)
 
-
-```
-heroku login # opens a web-browser to prompt you to log in
-cd my-project/
-git init
-heroku git:remote -a squid-inc-app
-
-git add .
-git commit -am "make it better"
-git push heroku main #may have to adjust this based on your branch name
-```
-* linking heroku to github
-* remove drop table from models
-
-The output should give you a URL for your application. So just follow that..
+On to Heroku. Using the UI, let's hook up our app. Simply go to "New" and select "Create new app". Give it a name and continue. From here, you can interact with the heroku CLI or simply directly from github. I find the Heroku CLI to be very useful for debugging, so I'd recommend installing it. ```heroku logs --tail``` will really help you debug any issues found in the deployment. For this, we'll mainly be interacting with the UI. 
+Select "Connect to Github", find your app once connected to Github, and select your deploy preferences. I really like the automatic deployment as it utilized web-hooks to re-deploy your app each time you make a commit - this is great for a development branch. 
+Simply hit the 'manual deploy' button for now, and watch your app come up!
 
 ### References
 - https://flask.palletsprojects.com/en/1.1.x/quickstart/

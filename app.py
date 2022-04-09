@@ -28,3 +28,4 @@ def detail_delete(id):
     food = Food.get(id=id)
     food.delete_instance()
     return redirect('/')
+

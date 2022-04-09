@@ -126,7 +126,7 @@ Our game-breaking website would be nothing without the data we collect, parse th
 Let's create a model directory and simple model.py file to store Squid's favorite foods. 
 - ```mkdir data ; cd data ; touch models.py```
 
-Within models.py, we'll use Peewee's [Quickstart Guide](https://docs.peewee-orm.com/en/latest/peewee/quickstart.html) to create and connect to our database, and build out our tables. (The 'recreate' function will re-build the tabels each time. This is nice for development, but we'll remove this before going to production.) 
+Within models.py, we'll use Peewee's [Quickstart Guide](https://docs.peewee-orm.com/en/latest/peewee/quickstart.html) to create and connect to our database, and build out our tables. 
 ```
 from peewee import *
 import pathlib

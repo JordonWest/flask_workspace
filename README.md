@@ -15,9 +15,7 @@ Create a virtual environment and install requirements.
 - ```python3 -m venv venv ; source venv/bin/activate```
 - ```pip install -r requirements.txt```
 
-Create a directory and main file for your new project. 
-- ```mkdir squid_inc```
-- ```cd squid_inc```
+Create a main file for your new project. 
 - ```touch app.py```
 
 Paste boilerplate into app.py.
@@ -125,7 +123,7 @@ Let's run it and see what Squid Inc's site looked like before we started our roc
 Our game-breaking website would be nothing without the data we collect, parse through, and discretely sell to various parties. We rely on a postgres database, and Flask's free-form model format. There are a number of great ORM's out there, but at Squid Inc, we prefer [PeeWee](https://www.reddit.com/r/Python/comments/4tnqai/comment/d5jyuug/?utm_source=share&utm_medium=web2x&context=3). 
 
 Let's create a model directory and simple model.py file to store Squid's favorite foods. 
-- ```mkdir models ; cd models ; touch models.py```
+- ```mkdir data ; cd data ; touch models.py```
 
 Within models.py, we'll use Peewee's [Quickstart Guide](https://docs.peewee-orm.com/en/latest/peewee/quickstart.html) to create and connect to our database, and build out our tables. (The 'recreate' function will re-build the tabels each time. This is nice for development, but we'll remove this before going to production.) 
 ```
@@ -133,7 +131,7 @@ from peewee import *
 import pathlib
 
 # I like to give the full path to where I want the sqlite db to live. 
-path = f"{pathlib.Path().resolve()}/models/"
+path = f"{pathlib.Path().resolve()}/data/"
 db = SqliteDatabase(f"{path}squid.db")
 
 class Food(Model):
@@ -146,10 +144,10 @@ db.connect()
 db.recreate_tables([Food])
 ```
 Let's get back to app.py, import our models and see our database get created. 
-In app.py add: ```from models.models import Food```, then run: 
+In app.py add: ```from data.models import Food```, then run: 
 - ```flask run``` 
 Notice our spiffy new database in models/ with a slick new table:
-- ```sqlite3 models/squid.db .tables```
+- ```sqlite3 data/squid.db .tables```
 
 ## Creating Endpoints and Routes
 Moving back to our templates, we'll add forms and buttons to get this multi-million dollar site to a multi-billion dollar Monolithic web-application. 
@@ -201,7 +199,7 @@ Let's see how we're looking!
 Beautiful. Well, we can Read, so let's get to the good part and make this a full CRUD app. Moving fast now, but Squid Inc didn't build the re-invent the internet without burning out a few thousand young coder souls.. Back in ```app.py``` let's update our food_detail route to receive parameters, GET, and POST requests. *NOTE*: Raw HTML forms cannot send HTTP verbs beyond GET and POST, so we're going to have to get a little creative with our routes to keep this short and sweet. This is not very RESTful, but I want to keep Javascript out of the mix for now. Update ```app.py``` with the following: 
 ```
 from flask import Flask, render_template, redirect, url_for, request
-from models.models import Food
+from data.models import Food
 
 app = Flask(__name__)
 
@@ -267,6 +265,37 @@ And let's update our food_detail.
   <button><a href="/">Back to the Home Page</a></button>
 {% endblock %}
 ```
+
+At long last, we're ready to go public. Heroku is a great resource for deploying hobby apps for yourself due too it's ease of use and the number of options you have available without paying a dime. Once you've created an account on Heroku, instructions are provided for deploying your application. I want to do a little bit of pre-work real quick to save you a few google searches. 
+Heroku relies on a Procfile to give it instructions on how to run your application. To make this as easy for Heroku to understand, we've got gunicorn in our requirements.txt, and will use some of it's syntax to help speak to Heroku. Make a file called ```run.py``` and insert the following code. This is what ```flask run``` is doing under the hood, but we want to be deliberate for Heroku, as well as specify an environment variable. 
+```
+import os
+os.environ["FLASK_ENV"] = "production"
+from app import app
+
+if __name__ == "__main__":
+  app.run()
+```
+
+Next, let's create our super complex ```Procfile```.
+- ```echo 'web: gunicorn run:app'```
+
+
+
+```
+heroku login # opens a web-browser to prompt you to log in
+cd my-project/
+git init
+heroku git:remote -a squid-inc-app
+
+git add .
+git commit -am "make it better"
+git push heroku main #may have to adjust this based on your branch name
+```
+* linking heroku to github
+* remove drop table from models
+
+The output should give you a URL for your application. So just follow that..
 
 ### References
 - https://flask.palletsprojects.com/en/1.1.x/quickstart/

@@ -118,11 +118,157 @@ Last, we'll need to build a route to direct us to the detail page. Back in app.p
 def detail_page():
     return render_template('food_detail.html'), 200
 ```
+Let's run it and see what Squid Inc's site looked like before we started our rocket program. 
+- ```flask run```
 
+## Setting up models, databases, and PeeWee.
+Our game-breaking website would be nothing without the data we collect, parse through, and discretely sell to various parties. We rely on a postgres database, and Flask's free-form model format. There are a number of great ORM's out there, but at Squid Inc, we prefer [PeeWee](https://www.reddit.com/r/Python/comments/4tnqai/comment/d5jyuug/?utm_source=share&utm_medium=web2x&context=3). 
 
+Let's create a model directory and simple model.py file to store Squid's favorite foods. 
+- ```mkdir models ; cd models ; touch models.py```
 
+Within models.py, we'll use Peewee's [Quickstart Guide](https://docs.peewee-orm.com/en/latest/peewee/quickstart.html) to create and connect to our database, and build out our tables. (The 'recreate' function will re-build the tabels each time. This is nice for development, but we'll remove this before going to production.) 
+```
+from peewee import *
+import pathlib
 
-### References:
+# I like to give the full path to where I want the sqlite db to live. 
+path = f"{pathlib.Path().resolve()}/models/"
+db = SqliteDatabase(f"{path}squid.db")
+
+class Food(Model):
+    name = CharField()
+    rating = IntegerField()
+
+    class Meta:
+        database = db
+db.connect()
+db.recreate_tables([Food])
+```
+Let's get back to app.py, import our models and see our database get created. 
+In app.py add: ```from models.models import Food```, then run: 
+- ```flask run``` 
+Notice our spiffy new database in models/ with a slick new table:
+- ```sqlite3 models/squid.db .tables```
+
+## Creating Endpoints and Routes
+Moving back to our templates, we'll add forms and buttons to get this multi-million dollar site to a multi-billion dollar Monolithic web-application. 
+Let's update our Homepage to provide us a list of Squid's favorite foods. I'll run some proprietary seed data taken straight from users like you just to give us something to look at as we build out these features. We'll pass that to home.html straight from our Endpoint using Peewee's lovely pythonic syntax, then display it on the page with some Jinja.
+Add the following to models for now. We will drop our Food table and re-seed each time we start the application.
+```
+...continued...
+
+db.drop_tables([Food])
+db.create_tables([Food])
+
+def seed_food():
+    seed_food = [
+        {'name': 'hamburger', 'rating': 10},
+        {'name': 'lettuce', 'rating': 9},
+        {'name': 'chimkin', 'rating': 10},
+        {'name': 'raw potato', 'rating': 9}
+    ]
+
+    for food in seed_food:
+        Food.create(name=food['name'], rating=food['rating'])
+seed_food()
+```
+
+Let's go to app.py and get this seed data passed to our home.html. We'll update the route with the following: 
+```
+@app.route('/')
+def home_page():
+    foods = Food.select()
+    return render_template('home.html', foods=foods), 200
+```
+Look at that gorgeous Peewee query.. We will now populate on our front page by updating the existing code with the following:
+```
+{% extends "base.html" %}
+{% block content %}
+  <h1> Homepage of Squid Inc </h1>
+  <h3>List of Foods</h3>
+  <ul>
+    {% for food in foods %}
+    <li>{{food.name}} = ({{food.rating}})   <a href="/food_detail/{{food.id}}>edit</a></li>
+    </br>
+    {% endfor %}
+  </ul>
+{% endblock %}
+```
+Let's see how we're looking!
+- ```flask run```
+
+Beautiful. Well, we can Read, so let's get to the good part and make this a full CRUD app. Moving fast now, but Squid Inc didn't build the re-invent the internet without burning out a few thousand young coder souls.. Back in ```app.py``` let's update our food_detail route to receive parameters, GET, and POST requests. *NOTE*: Raw HTML forms cannot send HTTP verbs beyond GET and POST, so we're going to have to get a little creative with our routes to keep this short and sweet. This is not very RESTful, but I want to keep Javascript out of the mix for now. Update ```app.py``` with the following: 
+```
+from flask import Flask, render_template, redirect, url_for, request
+from models.models import Food
+
+app = Flask(__name__)
+
+@app.route('/', methods=('GET', 'POST'))
+def home_page():
+    if request.method == 'POST':
+        Food.create(name=request.form['name'], rating=request.form['rating'])
+        return redirect('/')
+    else:
+        foods = Food.select()
+        return render_template('home.html', foods=foods), 200
+
+@app.route('/food_detail/<id>', methods=['GET', 'POST'])
+def detail_page(id):
+    food = Food.get(id=id)
+    if request.method == 'GET':
+        return render_template('food_detail.html', food=food), 200
+    if request.method == 'POST':
+        food.name = request.form['name']
+        food.rating = request.form['rating']
+        food.save()
+        return redirect('/')
+
+@app.route('/food_detail/<id>/delete', methods=['POST'])
+def detail_delete(id):
+    food = Food.get(id=id)
+    food.delete_instance()
+    return redirect('/')
+```
+That's a bunch of new code.. Let's talk about it line by line. Our home_page method is now accepting POSTs in addition to GETs (which is the default). We want to perform different actions based on the type of the request. If the request is a POST, we are expecing a request.form object which we will use to create a new Food item using Peewee. 
+Our detail page has gotten multiple big changes. The endpoint now accepts an item id, allowing us to serve item-specific templates. Since raw HTML isn't very RESTful, to just build another Endpoint for deleting. Any other POST requests will be treated much like a PUT, writing to the instance of Food in any case. Any requests that are not GETs will be handled, then redirected back to the appropriate page. 
+Let's build out that functionality into our templates, and watch this app run the way it did before we patented the ocean. Update ```home.html``` with the following:
+```
+  <h1> Homepage of Squid Inc </h1>
+  <h3>List of Foods</h3>
+  <ul>
+    {% for food in foods %}
+     <li>{{food.name}} = ({{food.rating}})   <a href="/food_detail/{{food.id}}">edit</a></li>
+    </br>
+    {% endfor %}
+  </ul>
+  <h3> Enter a New Food </h3>
+    <form action="/" method="POST">
+      <input type="text" name="name" placeholder="Name of food">
+      <input type="text" name="rating" placeholder="Enter a number rating">
+      <input type="submit" value="Submit">
+    </form>
+{% endblock %}
+```
+And let's update our food_detail.
+```
+{% extends "base.html" %}
+{% block content %}
+  <h1> Food Detail Page </h1>
+  <form action="/food_detail/{{food.id}}" method="POST">
+    <input type="text" name="name" value="{{food.name}}">
+    <input type="text" name="rating" value="{{food.rating}}">
+    <input type="submit" value="Submit">
+  </form>
+  <form action="/food_detail/{{food.id}}/delete" method="POST">
+    <input type="submit" value="Delete {{food.name}}">
+  </form>
+  <button><a href="/">Back to the Home Page</a></button>
+{% endblock %}
+```
+
+### References
 - https://flask.palletsprojects.com/en/1.1.x/quickstart/
 - https://docs.peewee-orm.com/en/latest/peewee/quickstart.html
 - https://www.freecodecamp.org/news/basic-html5-template-boilerplate-code-example/

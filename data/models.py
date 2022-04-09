@@ -1,7 +1,7 @@
 from peewee import *
 import pathlib
 
-path = f"{pathlib.Path().resolve()}/models/"
+path = f"{pathlib.Path().resolve()}/data/"
 db = SqliteDatabase(f"{path}squid.db")
 
 class Food(Model):

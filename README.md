@@ -272,30 +272,9 @@ And let's update our food_detail.
 Let's see the final product!
 - ```flask run```
 
-At long last, we're ready to go public. Heroku is a great resource for deploying hobby apps for yourself due too it's ease of use and the number of options you have available without paying a dime. Once you've created an account on Heroku, instructions are provided for deploying your application. I want to do a little bit of pre-work real quick to save you a few google searches. 
-Heroku relies on a Procfile to give it instructions on how to run your application. To make this as easy for Heroku to understand, we've got gunicorn in our requirements.txt, and will use some of it's syntax to help speak to Heroku. Make a file called ```run.py``` and insert the following code. This is what ```flask run``` is doing under the hood, but we want to be deliberate for Heroku, as well as specify an environment variable. 
-```
-import os
-os.environ["FLASK_ENV"] = "production"
-from app import app
-
-if __name__ == "__main__":
-  app.run()
-```
-
-Next, let's create our super complex ```Procfile```.
-- ```echo 'web: gunicorn run:app' >> Procfile```
-
-Make sure you push all your work up. (Probably should have been doing this the whole time..)
-
-On to Heroku. Using the UI, let's hook up our app. Simply go to "New" and select "Create new app". Give it a name and continue. From here, you can interact with the heroku CLI or simply directly from github. I find the Heroku CLI to be very useful for debugging, so I'd recommend installing it. ```heroku logs --tail``` will really help you debug any issues found in the deployment. For this, we'll mainly be interacting with the UI. 
-Select "Connect to Github", find your app once connected to Github, and select your deploy preferences. I really like the automatic deployment as it utilized web-hooks to re-deploy your app each time you make a commit - this is great for a development branch. 
-Simply hit the 'manual deploy' button for now, and watch your app come up!
-
 ## Closing Notes:
 I will move the finished product committed to help you follow along, but feel free to move it to a different directory and start fresh. 
 Full disclosure, this is not ready for production. 
-- Auto-deploys are not a smart idea for a production site.
 - Did not get into styling for sake of not boiling your brain with copy-pasting tons of code
 - Our data handling is an absolute travesty.. 
     -  Our models are being destroyed and re-built each time. 
